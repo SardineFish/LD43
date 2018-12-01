@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace LD43GameServer
 {
@@ -22,8 +23,9 @@ namespace LD43GameServer
             {
                 var serializer = new JsonSerializer();
                 Config = serializer.Deserialize<Config>(jr);
+                
             }
-
+            ServerLog.SetLogFile(Config.LogFilePath);
 
             CreateWebHostBuilder(args).Build().Run();
         }

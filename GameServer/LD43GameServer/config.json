@@ -1,5 +1,6 @@
 {
   "host": "localhost",
   "port": "9343",
-  "saveFolder":  "./Saves"
+  "saveFolder": "./Saves",
+  "log": "./server.log"
 }

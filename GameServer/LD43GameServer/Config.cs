@@ -17,5 +17,8 @@ namespace LD43GameServer
 
         [JsonProperty("saveFolder")]
         public string SaveFolder;
+
+        [JsonProperty("log")]
+        public string LogFilePath;
     }
 }
