@@ -7,18 +7,30 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace LD43GameServer
 {
     public class Program
     {
+        public static Config Config;
         public static void Main(string[] args)
         {
+            using (var fs = new FileStream("./config.json", FileMode.Open))
+            using (var sr = new StreamReader(fs))
+            using (var jr = new JsonTextReader(sr))
+            {
+                var serializer = new JsonSerializer();
+                Config = serializer.Deserialize<Config>(jr);
+            }
+
+
             CreateWebHostBuilder(args).Build().Run();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .UseUrls($"http://{Config.Host}:{Config.Port}/")
                 .UseStartup<Startup>();
     }
 }
