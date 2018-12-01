@@ -46,6 +46,8 @@ public class CameraMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (!followTarget)
+            return;
         var follow = (followTarget.position - transform.position - FollowRangeOffset.ToVector3()).ToVector2();
         var followAccelerateRange = MaxFollowRange - FollowStartRange;
 

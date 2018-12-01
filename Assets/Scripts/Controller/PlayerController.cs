@@ -36,7 +36,8 @@ public class PlayerController : MonoBehaviour
                 Move(control.Direction);
                 break;
             case PlayerAction.Jump:
-                Jump(control.Direction);
+                if (!Jump(control.Direction))
+                    control.Action = PlayerAction.Move;
                 break;
             case PlayerAction.Run:
                 Run(control.Direction);
@@ -61,7 +62,6 @@ public class PlayerController : MonoBehaviour
         //velocity.y += -PhysicsSystem.Instance.Gravity * Time.deltaTime;
         var v = GetComponent<Rigidbody2D>().velocity;
         v.x = velocity.x;
-        Debug.Log(v.y);
         if (velocity.y != 0)
         {
             v.y = velocity.y;
@@ -81,14 +81,20 @@ public class PlayerController : MonoBehaviour
         ApplyDirection(direction);
     }
 
-    public void Jump(float direction)
+    public bool Jump(float direction)
     {
         if (OnGround)
         {
             velocity.y = PhysicsSystem.Instance.JumpVelocoty;
             Debug.Log(PhysicsSystem.Instance.JumpVelocoty);
+            Move(direction);
+            return true;
         }
-        Move(direction);
+        else
+        {
+            Move(direction);
+            return false;
+        }
     }
 
     public void Run(float direction)

@@ -22,7 +22,7 @@ public class InputControlSequence : ControlSequence
     public override ControlDetail GetControl()
     {
         var axis = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-        var control = new ControlDetail() { Direction = axis.x };
+        var control = new ControlDetail() { Direction = axis.x, Tick = GameSystem.Instance.Tick };
         if (JumpKeys.Any(key => Input.GetKey(key)))
         {
             control.Action = PlayerAction.Jump;

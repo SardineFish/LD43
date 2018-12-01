@@ -26,7 +26,7 @@ public class PlaybackControlSequence:ControlSequence
         }
         if (controlSequence[idx + 1].Tick == GameSystem.Instance.Tick)
         {
-            return controlSequence[idx++];
+            return controlSequence[++idx];
         }
         else if (idx < 0)
         {
