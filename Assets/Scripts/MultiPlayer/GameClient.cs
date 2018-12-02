@@ -51,7 +51,7 @@ public class GameClient : Singleton<GameClient>
         }
     }
 
-    public void SendRecord()
+    public IEnumerator SendRecord()
     {
 
         GameSystem.Instance.PlayerInControl.GetComponent<PlayerController>().ControlRecord.ForEach(action =>
@@ -79,7 +79,7 @@ public class GameClient : Singleton<GameClient>
             LeaveMessage = "",
             Records = snapShots
         };
-        StartCoroutine(SendRecord(record));
+        yield return SendRecord(record);
     }
 
     IEnumerator ConnectCoroutine()

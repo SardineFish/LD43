@@ -8,7 +8,9 @@ public class Player : GameEntity
     public override void Die()
     {
         base.Die();
-        GameClient.Instance.SendRecord();
+        GUIManager.Instance.StartCoroutine(GUIManager.Instance.GameOver());
+        
+        //GameClient.Instance.SendRecord();
         //GameSystem.Instance.EndGame();
     }
 }
