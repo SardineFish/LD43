@@ -22,7 +22,7 @@ public class GameClient : MonoBehaviour
     public GameObject PlaybackPlayerPrefab;
     public LocationMark SpawnLocation;
 
-    WebSocket webSocket;
+    WebSocketClient webSocket;
     // Use this for initialization
     void Start()
     {
@@ -68,6 +68,7 @@ public class GameClient : MonoBehaviour
     IEnumerator ConnectCoroutine()
     {
         yield return webSocket.Connect();
+        Debug.Log("Connected");
         var handshake = new Message()
         {
             Type = MessageType.HandShake,
@@ -77,25 +78,21 @@ public class GameClient : MonoBehaviour
                 Name = PlayerName,
             }
         };
-        webSocket.SendString(JsonConvert.SerializeObject(handshake));
-        while (true)
-        {
-            var recv = webSocket.RecvString();
-            if (recv == null)
-                yield return null;
-            else
-            {
-                var response = (JsonConvert.DeserializeObject<Message>(webSocket.RecvString()).Body as JObject).Annotation<ServerHandShakeMessage>();
-                PlayerID = response.ID;
-                RoomID = response.RoomID;
-                Ready = true;
-                break;
-            }
-        }
+        
+        webSocket.SendMessage(JsonConvert.SerializeObject(handshake));
+        Debug.Log("Handshake sent");
+        yield return webSocket.WaitMessage();
+
+        Debug.Log(webSocket.Data);
+        var response = (JsonConvert.DeserializeObject<Message>(webSocket.Data).Body as JObject).ToObject<ServerHandShakeMessage>();
+        PlayerID = response.ID;
+        RoomID = response.RoomID;
+        Ready = true;
 
         // Get records
-        var request = new WWW($"http://{host}/get-records?room={RoomID}", new byte[0]);
+        var request = new WWW($"http://{host}/get-records/{RoomID}", new byte[] { 0 });
         yield return request;
+        Debug.Log(request.text);
         var records = JsonConvert.DeserializeObject<PlayerRecord[]>(request.text);
         foreach(var record in records)
         {
@@ -108,33 +105,20 @@ public class GameClient : MonoBehaviour
             Players[record.ID] = player;
         }
 
-        // Spawn player
-        PlayerInControl = GameSystem.Instance.SpawnPlayer(PlayerPrefab, SpawnLocation);
-
-        while (true)
-        {
-            var recv = webSocket.RecvString();
-            if (recv == null)
-                yield return null;
-            else
-            {
-                var sync = (JsonConvert.DeserializeObject<Message>(webSocket.RecvString()).Body as JObject).Annotation<SyncMessage>();
-            }
-        }
+        yield return webSocket.WaitMessage();
+        var sync = (JsonConvert.DeserializeObject<Message>(webSocket.Data).Body as JObject).ToObject<SyncMessage>();
+        StartCoroutine(GameLoopCoroutine());
     }
 
     IEnumerator GameLoopCoroutine()
     {
+        // Spawn player
+        PlayerInControl = GameSystem.Instance.SpawnPlayer(PlayerPrefab, SpawnLocation);
         GameSystem.Instance.StartGame();
         while (true)
         {
-            string recv;
-            while((recv=webSocket.RecvString()) == null)
-            {
-                yield return null;
-            }
-            var sync = (JsonConvert.DeserializeObject<Message>(webSocket.RecvString()).Body as JObject).Annotation<SyncMessage>();
-            
+            webSocket.WaitMessage();
+            var sync = (JsonConvert.DeserializeObject<Message>(webSocket.Data).Body as JObject).ToObject<SyncMessage>();
 
             yield return null;
         }
@@ -142,14 +126,16 @@ public class GameClient : MonoBehaviour
 
     IEnumerator SendRecord(PlayerRecord record)
     {
-        var request = new WWW($"http://{host}/record?id={PlayerID}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(record)));
+        var header = new Dictionary<string, string>();
+        header["Content-Type"] = "application/json";
+        var request = new WWW($"http://{host}/record/{PlayerID}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(record)), header);
         yield return request;
     }
 
     public void JoinGame(string name)
     {
         this.PlayerName = name;
-        webSocket = new WebSocket(new Uri($"ws://{host}/ws"));
+        webSocket = new WebSocketClient($"ws://{host}/ws");
         StartCoroutine(ConnectCoroutine());
     }
 }
