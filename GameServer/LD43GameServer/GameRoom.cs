@@ -10,12 +10,14 @@ namespace LD43GameServer
         const float FrameTime = 1.0f / 60.0f;
         const float WaitTiime = 5;
         const float JoinTime = 5;
+        const float KillTime = 20;
         public Guid ID = Guid.NewGuid();
         public Dictionary<Guid, Player> Players = new Dictionary<Guid, Player>();
         public PlayerRecord[] Records;
         public int GameTick = 0;
         public float GameTime = 0;
         public bool Active { get; private set; }
+        
         public List<PlayerSnapShot> PendingSync = new List<PlayerSnapShot>();
         public List<PlayerSnapShot> SendingSync;
         Thread GameThread;
@@ -57,6 +59,7 @@ namespace LD43GameServer
         }
         public void Close()
         {
+            ServerLog.Log($"Room {{{ID}}} closing.");
             Active = false;
         }
 
@@ -84,8 +87,7 @@ namespace LD43GameServer
                     SendingSync = PendingSync;
                     PendingSync = new List<PlayerSnapShot>();
                 }
-                if (SendingSync.Count <= 0)
-                    continue;
+                
                 var snapshots = SendingSync.ToArray();
                 bool shouldClose = true;
                 lock (Players)
@@ -93,14 +95,19 @@ namespace LD43GameServer
                     foreach (var pair in Players)
                     {
                         var player = pair.Value;
-                        if (player.Status == PlayerStatus.Alive)
+                        if (GameTime - player.LastSyncTime > KillTime)
+                            player.Close(PlayerStatus.Dead);
+                        else if (SendingSync.Count > 0)
                         {
-                            shouldClose = false;
-                            player.Sync(GameTick, snapshots);
-                        }
-                        else if (player.Status == PlayerStatus.Hang && GameTime - player.LastUpdateTime <= WaitTiime)
-                        {
-                            shouldClose = false;
+                            if (player.Status == PlayerStatus.Alive)
+                            {
+                                shouldClose = false;
+                                player.Sync(GameTick, snapshots);
+                            }
+                            else if (player.Status == PlayerStatus.Hang && GameTime - player.LastUpdateTime <= WaitTiime)
+                            {
+                                shouldClose = false;
+                            }
                         }
                     }
                 }

@@ -37,6 +37,7 @@ namespace LD43GameServer
 
         public bool Record(PlayerRecord record)
         {
+            
             GameHost.AddRecord(Guid.Parse(record.ID), record);
             return true;
         }

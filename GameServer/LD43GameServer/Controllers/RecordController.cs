@@ -13,8 +13,8 @@ namespace LD43GameServer
     [Route("/record")]
     public class RecordController : Controller
     {
-        [HttpPost("{id}")]
-        public void POST(string id)
+        //[HttpPost("{id}")]
+        public void POST(/*string id*/)
         {
             PlayerRecord record;
             using (StreamReader sr = new StreamReader(Request.Body)) 
@@ -22,11 +22,12 @@ namespace LD43GameServer
             {
                 record = JsonSerializer.Create().Deserialize<PlayerRecord>(jtr);   
             }
-            if (!GameServer.Instance.CheckPlayer(Guid.Parse(record.ID)))
+            /*if (!GameServer.Instance.CheckPlayer(Guid.Parse(record.ID)))
             {
                 Response.StatusCode = 403;
                 return;
-            }
+            }*/
+            record.ID = Guid.NewGuid().ToString();
             GameServer.Instance.Record(record);
         }
     }

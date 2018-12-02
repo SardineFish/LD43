@@ -13,13 +13,14 @@ namespace LD43GameServer.Controllers
         [HttpPost("{room}")]
         public string Post(string room)
         {
+            /*
             var records = GameServer.Instance.GetRecordsFromRoom(Guid.Parse(room));
             if(records==null)
             {
                 Response.StatusCode = 404;
                 return null;
-            }
-            return JsonConvert.SerializeObject(records);
+            }*/
+            return JsonConvert.SerializeObject(GameServer.Instance.GameHost.PlayerRecords.Values.ToArray());
         }
     }
 }

@@ -26,11 +26,11 @@ namespace LD43GameServer
         public string ID;
 
         [JsonProperty("pos")]
-        public float Position;
+        public double[] Position;
 
         [JsonProperty("v")]
-        public float Velocity;
-        
+        public double[] Velocity;
+
         [JsonProperty("ctrl")]
         public PlayerControl Control;
     }

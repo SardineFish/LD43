@@ -20,6 +20,7 @@ namespace LD43GameServer
         public bool Active { get; private set; }
         internal GameRoom Room = null;
         public float LastUpdateTime = 0;
+        public float LastSyncTime = 0;
         WebSocketHandler handler;
         Task ReceiveTask;
         Task SendTask;
@@ -93,6 +94,7 @@ namespace LD43GameServer
                     {
                         var sync = (message.Body as JObject).ToObject<SyncMessage>();
                         Room.AddSync(sync.Snapshots.Where(snapshot => snapshot.ID == ID.ToString()).ToArray());
+                        LastSyncTime = Room.GameTime;
                     }
                 }
             }
@@ -127,15 +129,18 @@ namespace LD43GameServer
 
         public void Sync(int serverTick,PlayerSnapShot[] snapShots)
         {
-            MessageQueue.Enqueue(new Message()
+            if(Status == PlayerStatus.Alive)
             {
-                Type = MessageType.Sync,
-                Body = new SyncMessage()
+                MessageQueue.Enqueue(new Message()
                 {
-                    ServerTick = serverTick,
-                    Snapshots = snapShots
-                }
-            });
+                    Type = MessageType.Sync,
+                    Body = new SyncMessage()
+                    {
+                        ServerTick = serverTick,
+                        Snapshots = snapShots
+                    }
+                });
+            }
         }
     }
 }

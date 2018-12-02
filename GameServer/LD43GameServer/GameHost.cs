@@ -11,8 +11,6 @@ namespace LD43GameServer
         public List<GameRoom> Rooms = new List<GameRoom>();
         public Dictionary<Guid, PlayerRecord> PlayerRecords = new Dictionary<Guid, PlayerRecord>();
 
-        
-
         public bool Join(Player player)
         {
             Players[player.ID] = player;
@@ -27,10 +25,11 @@ namespace LD43GameServer
 
         public bool AddRecord(Guid playerID, PlayerRecord record)
         {
+            /*
             if (!Players.ContainsKey(playerID))
                 return false;
             Players[playerID].Status = PlayerStatus.Dead;
-            Players[playerID].Close(PlayerStatus.Dead);
+            Players[playerID].Close(PlayerStatus.Dead);*/
             lock (PlayerRecords)
             {
                 PlayerRecords[playerID] = record;
