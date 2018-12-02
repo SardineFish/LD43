@@ -195,14 +195,13 @@ public class GameClient : Singleton<GameClient>
         }
 
         PlayerInControl = GameSystem.Instance.SpawnPlayer(PlayerPrefab, SpawnLocation);
-        GameSystem.Instance.StartGame();
     }
 
-    public void JoinGame(string name)
+    public IEnumerator JoinGame(string name)
     {
         this.PlayerName = name;
 
-        StartCoroutine(GameRecordCoroutine());
+        yield return GameRecordCoroutine();
 
         /*webSocket = new WebSocketClient($"ws://{host}/ws");
         StartCoroutine(ConnectCoroutine());*/

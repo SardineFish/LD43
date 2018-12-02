@@ -14,10 +14,10 @@ namespace Assets.Editor
     {
         void OnPostprocessTexture(Texture2D texture)
         {
-            var importer = assetImporter as TextureImporter;
+            /*var importer = assetImporter as TextureImporter;
             importer.spritePixelsPerUnit = 16;
             importer.filterMode = FilterMode.Point;
-            importer.spriteImportMode = SpriteImportMode.Multiple;
+            importer.spriteImportMode = SpriteImportMode.Multiple;*/
         }
     }
 }
