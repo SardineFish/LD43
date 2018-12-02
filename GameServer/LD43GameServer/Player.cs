@@ -20,7 +20,7 @@ namespace LD43GameServer
         public Player(WebSocketHandler handler)
         {
             this.handler = handler;
-            this.ID = Guid.NewGuid();
+            ID = Guid.NewGuid();
         }
         public void Start()
         {
@@ -99,15 +99,16 @@ namespace LD43GameServer
             }
         }
 
-        public void Sync(PlayerSnapShot[] snapShots)
+        public void Sync(int serverTick,PlayerSnapShot[] snapShots)
         {
             MessageQueue.Enqueue(new Message()
             {
                 Type = MessageType.Sync,
                 Body = new SyncMessage()
                 {
+                    ServerTick = serverTick,
                     Snapshots = snapShots
-                }
+                };
             });
         }
     }

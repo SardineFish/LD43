@@ -7,9 +7,13 @@ namespace LD43GameServer
 {
     public class GameRoom
     {
-        public Guid ID;
+        const float FrameTime = 1 / 60;
+        const float WaitTiime = 5;
+        const float JoinTime = 5;
+        public Guid ID = Guid.NewGuid();
         public Dictionary<Guid, Player> Players = new Dictionary<Guid, Player>();
         public int GameTick = 0;
+        public float GameTime = 0;
         public bool Active { get; private set; }
         public List<PlayerSnapShot> PendingSync = new List<PlayerSnapShot>();
         public List<PlayerSnapShot> SendingSync;
@@ -17,7 +21,12 @@ namespace LD43GameServer
 
         public bool Join(Player player)
         {
-            Players.Add(player.ID, player);
+            if (GameTime > JoinTime)
+                return false;
+            lock(Players)
+            {
+                Players.Add(player.ID, player);
+            }
             return true;
         }
 
@@ -38,19 +47,28 @@ namespace LD43GameServer
             GameThread = new Thread(StartInternal);
             GameThread.Start();
         }
+        public void Close()
+        {
+            Active = false;
+        }
 
         void StartInternal()
         {
+            GameTime = 0;
+            GameTick = 0;
+            Thread.Sleep(TimeSpan.FromSeconds(WaitTiime));
             lock (Players)
             {
                 foreach(var pair in Players)
                 {
-                    pair.Value.Sync(new PlayerSnapShot[0]);
+                    pair.Value.Sync(0, new PlayerSnapShot[0]);
                 }
             }
             while (Active)
             {
-                Thread.Sleep(30);
+                Thread.Sleep(TimeSpan.FromSeconds(FrameTime));
+                GameTime += FrameTime;
+                GameTick++;
                 lock (PendingSync)
                 {
                     SendingSync = PendingSync;
@@ -61,8 +79,15 @@ namespace LD43GameServer
                 {
                     foreach (var pair in Players)
                     {
-                        pair.Value.Sync(snapshots);
+                        pair.Value.Sync(GameTick, snapshots);
                     }
+                }
+            }
+            lock (Players)
+            {
+                foreach (var pair in Players)
+                {
+                    pair.Value.Close();
                 }
             }
         }

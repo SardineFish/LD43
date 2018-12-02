@@ -15,7 +15,13 @@ namespace LD43GameServer
 
         public bool Join(Player player)
         {
-            return false;
+            if (Rooms.Count <= 0 || !Rooms[Rooms.Count-1].Join(player))
+            {
+                var room = AddRoom();
+                room.Join(player);
+                return true;
+            }
+            return true;
         }
 
         public void AddRecord(Guid playerID, PlayerSnapShot[] snapshots)
@@ -24,6 +30,27 @@ namespace LD43GameServer
             {
                 PlayerRecords[playerID] = snapshots;
             }
+        }
+
+        public GameRoom AddRoom()
+        {
+            var room = new GameRoom();
+            lock (Rooms)
+            {
+                Rooms.Add(room);
+            }
+            return room;
+        }
+
+        public void RemoveRoom(Guid roomID)
+        {
+            GameRoom room;
+            lock (Rooms)
+            {
+                room = this.Rooms.Where(r => r.ID == roomID).FirstOrDefault();
+                this.Rooms.Remove(room);
+            }
+            room.Close();
         }
     }
 }

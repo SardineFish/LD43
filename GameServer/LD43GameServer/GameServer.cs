@@ -5,15 +5,18 @@ using System.Threading.Tasks;
 
 namespace LD43GameServer
 {
-    public static class GameServer
+    public class GameServer: Singleton<GameServer>
     {
-        public static GameHost GameHost;
+        public GameHost GameHost;
 
-        public static void Start()
+        public void Start()
         {
             GameHost = new GameHost();
         }
 
-
+        public bool Join(Player player)
+        {
+            return GameHost.Join(player);
+        }
     }
 }

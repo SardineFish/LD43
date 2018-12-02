@@ -9,6 +9,9 @@ namespace LD43GameServer
     [JsonObject]
     public class SyncMessage: MessageBody
     {
+        [JsonProperty("tick")]
+        public int ServerTick;
+
         [JsonProperty("data")]
         public PlayerSnapShot[] Snapshots;
     }
