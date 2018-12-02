@@ -10,7 +10,7 @@ using System.Text;
 
 public class GameClient : MonoBehaviour
 {
-    public string url = "http://localhost:9343";
+    public string host = "localhost:9343";
     public string PlayerName;
     public string PlayerID;
     public string RoomID;
@@ -94,7 +94,7 @@ public class GameClient : MonoBehaviour
         }
 
         // Get records
-        var request = new WWW($"{url}/get-records?room={RoomID}", new byte[0]);
+        var request = new WWW($"http://{host}/get-records?room={RoomID}", new byte[0]);
         yield return request;
         var records = JsonConvert.DeserializeObject<PlayerRecord[]>(request.text);
         foreach(var record in records)
@@ -142,14 +142,14 @@ public class GameClient : MonoBehaviour
 
     IEnumerator SendRecord(PlayerRecord record)
     {
-        var request = new WWW($"{url}/record?id={PlayerID}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(record)));
+        var request = new WWW($"http://{host}/record?id={PlayerID}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(record)));
         yield return request;
     }
 
     public void JoinGame(string name)
     {
         this.PlayerName = name;
-        webSocket = new WebSocket(new Uri($"{url}/ws"));
+        webSocket = new WebSocket(new Uri($"ws://{host}/ws"));
         StartCoroutine(ConnectCoroutine());
     }
 }
