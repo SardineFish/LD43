@@ -18,7 +18,10 @@ namespace LD43GameServer
         {
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine($"[{DateTime.Now.ToString()}][Log]{message}");
-            File.AppendAllLines(logPath, new string[] { $"[{DateTime.Now.ToString()}][Log]{message}" });
+            lock (logPath)
+            {
+                File.AppendAllLines(logPath, new string[] { $"[{DateTime.Now.ToString()}][Log]{message}" });
+            }
         }
 
         public static void Warn(string message)
@@ -29,7 +32,10 @@ namespace LD43GameServer
             Console.Write("[Warn]");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine($"{message}");
-            File.AppendAllLines(logPath, new string[] { $"[{DateTime.Now.ToString()}][Warn]{message}" });
+            lock(logPath)
+            {
+                File.AppendAllLines(logPath, new string[] { $"[{DateTime.Now.ToString()}][Warn]{message}" });
+            }
         }
 
         public static void Error(string message)
@@ -40,7 +46,10 @@ namespace LD43GameServer
             Console.Write("[Error]");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine($"{message}");
-            File.AppendAllLines(logPath, new string[] { $"[{DateTime.Now.ToString()}][Error]{message}" });
+            lock (logPath)
+            {
+                File.AppendAllLines(logPath, new string[] { $"[{DateTime.Now.ToString()}][Error]{message}" });
+            }
         }
     }
 }

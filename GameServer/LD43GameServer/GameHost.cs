@@ -45,6 +45,7 @@ namespace LD43GameServer
             {
                 Rooms.Add(room);
             }
+            room.Start();
             ServerLog.Log($"New room created with {records.Length} records id={{{room.ID}}}.");
             return room;
         }

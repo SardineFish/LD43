@@ -27,7 +27,7 @@ namespace LD43GameServer
                 Response.StatusCode = 403;
                 return;
             }
-
+            GameServer.Instance.Record(record);
         }
     }
 }

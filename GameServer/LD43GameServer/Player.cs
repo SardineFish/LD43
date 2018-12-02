@@ -39,6 +39,7 @@ namespace LD43GameServer
         }
         public void Close(PlayerStatus status)
         {
+            ServerLog.Log($"Player {{{ID}}} closed.");
             Status = status;
             if (Active)
             {
@@ -62,7 +63,7 @@ namespace LD43GameServer
                             Close(PlayerStatus.Dead);
                             return;
                         }
-                        ServerLog.Log($"Handshake with {Name}");
+                        ServerLog.Log($"Handshake with {Name} id={{{ID}}}");
                         var response = new ServerHandShakeMessage()
                         {
                             ID = this.ID.ToString(),

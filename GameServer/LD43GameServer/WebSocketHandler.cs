@@ -28,6 +28,7 @@ namespace LD43GameServer
             var idx = 0;
             var length = receiveBuffer.Length;
             ValueWebSocketReceiveResult result;
+            Next:
             do
             {
                 if (idx >= receiveBuffer.Length)
@@ -40,6 +41,8 @@ namespace LD43GameServer
                 idx += result.Count;
                 length -= result.Count;
             } while (!result.EndOfMessage);
+            if (result.Count == 0)
+                goto Next;
             return Encoding.UTF8.GetString(receiveBuffer);
         }
         public async Task SendStringAsync(string message)

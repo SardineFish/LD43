@@ -7,7 +7,7 @@ namespace LD43GameServer
 {
     public class GameRoom
     {
-        const float FrameTime = 1 / 60;
+        const float FrameTime = 1.0f / 60.0f;
         const float WaitTiime = 5;
         const float JoinTime = 5;
         public Guid ID = Guid.NewGuid();
@@ -64,6 +64,7 @@ namespace LD43GameServer
         {
             GameTime = 0;
             GameTick = 0;
+            ServerLog.Log($"Game room {{{ID}}} waiting for players. ");
             Thread.Sleep(TimeSpan.FromSeconds(WaitTiime));
             lock (Players)
             {
@@ -72,6 +73,7 @@ namespace LD43GameServer
                     pair.Value.Sync(0, new PlayerSnapShot[0]);
                 }
             }
+            ServerLog.Log($"Game room {{{ID}}} started.");
             while (Active)
             {
                 Thread.Sleep(TimeSpan.FromSeconds(FrameTime));
@@ -82,6 +84,8 @@ namespace LD43GameServer
                     SendingSync = PendingSync;
                     PendingSync = new List<PlayerSnapShot>();
                 }
+                if (SendingSync.Count <= 0)
+                    continue;
                 var snapshots = SendingSync.ToArray();
                 bool shouldClose = true;
                 lock (Players)
@@ -101,8 +105,10 @@ namespace LD43GameServer
                     }
                 }
                 if (shouldClose)
+                {
                     Close();
-                break;
+                    break;
+                }
             }
             lock (Players)
             {
