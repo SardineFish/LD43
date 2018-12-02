@@ -712,6 +712,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PlayerPrefab: {fileID: 1646301971970388, guid: f9222ddbd67e59a4887a6796c9c8bc9a,
     type: 2}
+  PlaybackPlayerPrefab: {fileID: 1873296577783618, guid: a5c376f94dbfe124cbfb9a54eac456b9,
+    type: 2}
   SpawnLocation: {fileID: 1377526758}
 --- !u!1 &1249374768
 GameObject:
