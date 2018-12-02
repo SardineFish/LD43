@@ -12,12 +12,18 @@ namespace LD43GameServer
         const float JoinTime = 5;
         public Guid ID = Guid.NewGuid();
         public Dictionary<Guid, Player> Players = new Dictionary<Guid, Player>();
+        public PlayerRecord[] Records;
         public int GameTick = 0;
         public float GameTime = 0;
         public bool Active { get; private set; }
         public List<PlayerSnapShot> PendingSync = new List<PlayerSnapShot>();
         public List<PlayerSnapShot> SendingSync;
         Thread GameThread;
+
+        public GameRoom(PlayerRecord[] records)
+        {
+            Records = records;
+        }
 
         public bool Join(Player player)
         {
@@ -27,6 +33,7 @@ namespace LD43GameServer
             {
                 Players.Add(player.ID, player);
             }
+            player.Room = this;
             return true;
         }
 
@@ -59,6 +66,7 @@ namespace LD43GameServer
             Thread.Sleep(TimeSpan.FromSeconds(WaitTiime));
             lock (Players)
             {
+
                 foreach(var pair in Players)
                 {
                     pair.Value.Sync(0, new PlayerSnapShot[0]);
@@ -87,7 +95,7 @@ namespace LD43GameServer
             {
                 foreach (var pair in Players)
                 {
-                    pair.Value.Close();
+                    pair.Value.Close(PlayerStatus.Dead);
                 }
             }
         }

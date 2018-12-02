@@ -9,32 +9,37 @@ namespace LD43GameServer
     {
         public Dictionary<Guid, Player> Players = new Dictionary<Guid, Player>();
         public List<GameRoom> Rooms = new List<GameRoom>();
-        public Dictionary<Guid, PlayerSnapShot[]> PlayerRecords = new Dictionary<Guid, PlayerSnapShot[]>();
+        public Dictionary<Guid, PlayerRecord> PlayerRecords = new Dictionary<Guid, PlayerRecord>();
 
         
 
         public bool Join(Player player)
         {
-            if (Rooms.Count <= 0 || !Rooms[Rooms.Count-1].Join(player))
+            if (Rooms.Count <= 0 || !Rooms[Rooms.Count - 1].Join(player))
             {
-                var room = AddRoom();
+                var room = AddRoom(PlayerRecords.Values.ToArray());
                 room.Join(player);
                 return true;
             }
             return true;
         }
 
-        public void AddRecord(Guid playerID, PlayerSnapShot[] snapshots)
+        public bool AddRecord(Guid playerID, PlayerRecord record)
         {
+            if (!Players.ContainsKey(playerID))
+                return false;
+            Players[playerID].Status = PlayerStatus.Dead;
+            Players[playerID].Close(PlayerStatus.Dead);
             lock (PlayerRecords)
             {
-                PlayerRecords[playerID] = snapshots;
+                PlayerRecords[playerID] = record;
             }
+            return true;
         }
 
-        public GameRoom AddRoom()
+        public GameRoom AddRoom(PlayerRecord[] records)
         {
-            var room = new GameRoom();
+            var room = new GameRoom(records);
             lock (Rooms)
             {
                 Rooms.Add(room);

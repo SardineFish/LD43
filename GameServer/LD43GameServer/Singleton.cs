@@ -7,10 +7,10 @@ namespace LD43GameServer
 {
     public class Singleton<T> where T:Singleton<T>
     {
-        public static Singleton<T> Instance { get; private set; }
+        public static T Instance { get; private set; }
         public Singleton()
         {
-            Instance = this;
+            Instance = this as T;
         }
     }
 }

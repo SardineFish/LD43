@@ -6,12 +6,19 @@ using System.Threading.Tasks;
 
 namespace LD43GameServer
 {
+    public enum PlayerStatus
+    {
+        Alive,
+        Hang,
+        Dead,
+    }
     public class Player
     {
         public string Name;
+        public PlayerStatus Status = PlayerStatus.Alive;
         public Guid ID;
         public bool Active { get; private set; }
-        internal GameRoom Room;
+        internal GameRoom Room = null;
         WebSocketHandler handler;
         Task ReceiveTask;
         Task SendTask;
@@ -30,8 +37,9 @@ namespace LD43GameServer
             SendTask = new Task(StartSendInternal);
             SendTask.Start();
         }
-        public void Close()
+        public void Close(PlayerStatus status)
         {
+            Status = status;
             if (Active)
             {
                 Active = false;
@@ -49,6 +57,21 @@ namespace LD43GameServer
                     if (msg.Type == HandShakeType.Join)
                     {
                         Name = msg.Name;
+                        if(!GameServer.Instance.Join(this))
+                        {
+                            Close(PlayerStatus.Dead);
+                            return;
+                        }
+                        var response = new ServerHandShakeMessage()
+                        {
+                            ID = this.ID.ToString(),
+                            RoomID = this.Room.ID.ToString()
+                        };
+                        MessageQueue.Enqueue(new Message()
+                        {
+                            Type = MessageType.HandShake,
+                            Body = response
+                        });
                     }
                     else if (msg.Type == HandShakeType.Reconnect)
                     {
@@ -74,7 +97,7 @@ namespace LD43GameServer
             catch(Exception ex)
             {
                 ServerLog.Error($"Error when receive from [{Name}]: {ex.Message}");
-                Close();
+                Close(PlayerStatus.Hang);
             }
         }
         async void StartSendInternal()
@@ -95,8 +118,9 @@ namespace LD43GameServer
             catch (Exception ex)
             {
                 ServerLog.Error($"Error when send to [{Name}]: {ex.Message}");
-                Close();
+                Close(PlayerStatus.Hang);
             }
+            MessageQueue = null;
         }
 
         public void Sync(int serverTick,PlayerSnapShot[] snapShots)
@@ -108,7 +132,7 @@ namespace LD43GameServer
                 {
                     ServerTick = serverTick,
                     Snapshots = snapShots
-                };
+                }
             });
         }
     }

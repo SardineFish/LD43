@@ -14,8 +14,20 @@ namespace LD43GameServer
     public class RecordController : Controller
     {
         [HttpPost("{id}")]
-        public object POST(string id)
+        public void POST(string id)
         {
+            PlayerRecord record;
+            using (StreamReader sr = new StreamReader(Request.Body)) 
+            using (JsonTextReader jtr = new JsonTextReader(sr))
+            {
+                record = JsonSerializer.Create().Deserialize<PlayerRecord>(jtr);   
+            }
+            if (!GameServer.Instance.CheckPlayer(record.ID))
+            {
+                Response.StatusCode = 403;
+                return;
+            }
+
         }
     }
 }
