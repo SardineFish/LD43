@@ -12,7 +12,7 @@ namespace LD43GameServer
         [JsonProperty("name")]
         public string Name;
         [JsonProperty("id")]
-        public Guid ID;
+        public string ID;
         [JsonProperty("msg")]
         public string LeaveMessage;
         [JsonProperty("records")]

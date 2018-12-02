@@ -34,6 +34,7 @@ namespace LD43GameServer
                 Players.Add(player.ID, player);
             }
             player.Room = this;
+            ServerLog.Log($"Player {player.Name} join room {ID}");
             return true;
         }
 

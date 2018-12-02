@@ -15,6 +15,7 @@ namespace LD43GameServer
     public class Program
     {
         public static Config Config;
+        public static GameServer GameServer;
         public static void Main(string[] args)
         {
             using (var fs = new FileStream("./config.json", FileMode.Open))
@@ -26,7 +27,8 @@ namespace LD43GameServer
                 
             }
             ServerLog.SetLogFile(Config.LogFilePath);
-
+            GameServer = new GameServer();
+            GameServer.Start();
             CreateWebHostBuilder(args).Build().Run();
         }
 

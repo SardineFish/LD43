@@ -63,6 +63,7 @@ namespace LD43GameServer
                             Close(PlayerStatus.Dead);
                             return;
                         }
+                        ServerLog.Log($"Handshake with {Name}");
                         var response = new ServerHandShakeMessage()
                         {
                             ID = this.ID.ToString(),

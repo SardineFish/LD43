@@ -49,6 +49,10 @@ namespace LD43GameServer
                     if (context.Request.Path == "/ws")
                     {
                         WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                        var handler = new WebSocketHandler(webSocket);
+                        var player = new Player(handler);
+                        player.Start();
+                        ServerLog.Log($"A player connected.");
                     }
                     else
                     {

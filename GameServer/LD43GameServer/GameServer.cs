@@ -13,6 +13,7 @@ namespace LD43GameServer
         public void Start()
         {
             GameHost = new GameHost();
+            ServerLog.Log("Game server started.");
         }
 
         public bool Join(Player player)
@@ -30,7 +31,7 @@ namespace LD43GameServer
 
         public bool Record(PlayerRecord record)
         {
-            GameHost.AddRecord(record.ID, record);
+            GameHost.AddRecord(Guid.Parse(record.ID), record);
             return true;
         }
 

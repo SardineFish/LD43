@@ -22,7 +22,7 @@ namespace LD43GameServer
             {
                 record = JsonSerializer.Create().Deserialize<PlayerRecord>(jtr);   
             }
-            if (!GameServer.Instance.CheckPlayer(record.ID))
+            if (!GameServer.Instance.CheckPlayer(Guid.Parse(record.ID)))
             {
                 Response.StatusCode = 403;
                 return;
