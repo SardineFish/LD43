@@ -22,11 +22,23 @@ public class GameClient : MonoBehaviour
     public GameObject PlaybackPlayerPrefab;
     public LocationMark SpawnLocation;
 
+    public List<PlayerSnapShot> SyncToSend = new List<PlayerSnapShot>();
+
     WebSocketClient webSocket;
     // Use this for initialization
     void Start()
     {
 
+    }
+
+    private void LateUpdate()
+    {
+        if (PlayerInControl)
+        {
+            var snapshot = PlayerInControl.GetComponent<PlayerController>().LastSnapshot;
+            if (snapshot != null)
+                SyncToSend.Add(snapshot);
+        }
     }
 
     // Update is called once per frame
@@ -46,10 +58,10 @@ public class GameClient : MonoBehaviour
                     Control = new PlayerControl()
                     {
                         Action = (int)playback.Action,
-                        direction = playback.Direction
+                        Direction = playback.Direction
                     },
-                    Position = 0,
-                    Velocity = 0
+                    Position = new double[] { 0, 0 },
+                    Velocity = new double[] { 0, 0 }
                 })
                 .ToArray();
             var record = new PlayerRecord()
@@ -65,8 +77,11 @@ public class GameClient : MonoBehaviour
         }
     }
 
+    
+
     IEnumerator ConnectCoroutine()
     {
+        
         yield return webSocket.Connect();
         Debug.Log("Connected");
         var handshake = new Message()
@@ -100,7 +115,7 @@ public class GameClient : MonoBehaviour
             {
                 Action = (PlayerAction)r.Control.Action,
                 Tick = r.Tick,
-                Direction = r.Control.direction
+                Direction = r.Control.Direction
             }).ToArray());
             Players[record.ID] = player;
         }
@@ -114,6 +129,7 @@ public class GameClient : MonoBehaviour
     {
         // Spawn player
         PlayerInControl = GameSystem.Instance.SpawnPlayer(PlayerPrefab, SpawnLocation);
+        StartCoroutine(GameSyncCoroutine());
         GameSystem.Instance.StartGame();
         while (true)
         {
@@ -121,6 +137,31 @@ public class GameClient : MonoBehaviour
             var sync = (JsonConvert.DeserializeObject<Message>(webSocket.Data).Body as JObject).ToObject<SyncMessage>();
 
             yield return null;
+        }
+    }
+
+    IEnumerator GameSyncCoroutine()
+    {
+        while (true)
+        {
+            yield return null;
+
+            if (SyncToSend.Count > 0)
+            {
+                var snapshots = SyncToSend.ToArray();
+                var msg = new Message()
+                {
+                    Type = MessageType.Sync,
+                    Body = new SyncMessage()
+                    {
+                        Snapshots = snapshots
+                    }
+                };
+                var json = JsonConvert.SerializeObject(msg);
+                webSocket.SendMessage(json);
+                SyncToSend.Clear();
+            }
+            
         }
     }
 
@@ -132,10 +173,35 @@ public class GameClient : MonoBehaviour
         yield return request;
     }
 
+    IEnumerator GameRecordCoroutine()
+    {
+        // Get records
+        var request = new WWW($"http://{host}/get-records/0", new byte[] { 0 });
+        yield return request;
+        Debug.Log(request.text);
+        var records = JsonConvert.DeserializeObject<PlayerRecord[]>(request.text);
+        foreach (var record in records)
+        {
+            var player = GameSystem.Instance.SpawnPlayBackPlayer(PlaybackPlayerPrefab, SpawnLocation, record.Records.Select(r => new ControlDetail()
+            {
+                Action = (PlayerAction)r.Control.Action,
+                Tick = r.Tick,
+                Direction = r.Control.Direction
+            }).ToArray());
+            Players[record.ID] = player;
+        }
+
+        PlayerInControl = GameSystem.Instance.SpawnPlayer(PlayerPrefab, SpawnLocation);
+        GameSystem.Instance.StartGame();
+    }
+
     public void JoinGame(string name)
     {
         this.PlayerName = name;
-        webSocket = new WebSocketClient($"ws://{host}/ws");
-        StartCoroutine(ConnectCoroutine());
+
+        StartCoroutine(GameRecordCoroutine());
+
+        /*webSocket = new WebSocketClient($"ws://{host}/ws");
+        StartCoroutine(ConnectCoroutine());*/
     }
 }

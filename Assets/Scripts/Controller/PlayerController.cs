@@ -14,6 +14,20 @@ public class PlayerController : MonoBehaviour
     public Vector2 velocity = Vector2.zero;
     public ControlSequence ControlSequence;
     public List<ControlDetail> ControlRecord = new List<ControlDetail>();
+    MultiPlayer.PlayerSnapShot lastSnapshot;
+    public MultiPlayer.PlayerSnapShot LastSnapshot
+    {
+        get
+        {
+            var snapshot = lastSnapshot;
+            lastSnapshot = null;
+            return snapshot;
+        }
+        private set
+        {
+            lastSnapshot = value;
+        }
+    }
     // Use this for initialization
     void Start()
     {
@@ -53,7 +67,18 @@ public class PlayerController : MonoBehaviour
         else if (!control.IsSame(ControlRecord[ControlRecord.Count - 1]))
         {
             ControlRecord.Add(control);
-        }
+            LastSnapshot = new MultiPlayer.PlayerSnapShot()
+            {
+                Tick = control.Tick,
+                Position = MultiPlayer.Utilities.Vector2List(transform.position),
+                Velocity = MultiPlayer.Utilities.Vector2List(GetComponent<Rigidbody2D>().velocity),
+                Control = new MultiPlayer.PlayerControl()
+                {
+                    Action = (int)control.Action,
+                    Direction = control.Direction,
+                }
+            };
+        };
 
     }
 
