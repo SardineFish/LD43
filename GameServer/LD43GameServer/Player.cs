@@ -30,13 +30,12 @@ namespace LD43GameServer
             this.handler = handler;
             ID = Guid.NewGuid();
         }
-        public void Start()
+        public Task Start()
         {
             Active = true;
-            ReceiveTask = new Task(StartReceiveInternal);
-            ReceiveTask.Start();
-            SendTask = new Task(StartSendInternal);
-            SendTask.Start();
+            SendTask = StartSendInternal();
+            ReceiveTask = StartReceiveInternal();
+            return ReceiveTask;
         }
         public void Close(PlayerStatus status)
         {
@@ -47,14 +46,14 @@ namespace LD43GameServer
                 handler.Close();
             }
         }
-        async void StartReceiveInternal()
+        async Task StartReceiveInternal()
         {
             try
             {
                 var handshake = await handler.ReceiveObjectAsync<Message>();
                 if (handshake.Type == MessageType.HandShake)
                 {
-                    var msg = (handshake.Body as JObject).Annotation<ClientHandShakeMessage>();
+                    var msg = (handshake.Body as JObject).ToObject<ClientHandShakeMessage>();
                     if (msg.Type == HandShakeType.Join)
                     {
                         Name = msg.Name;
@@ -91,7 +90,7 @@ namespace LD43GameServer
                     var message = await handler.ReceiveObjectAsync<Message>();
                     if(message.Type == MessageType.Sync)
                     {
-                        var sync = (message.Body as JObject).Annotation<SyncMessage>();
+                        var sync = (message.Body as JObject).ToObject<SyncMessage>();
                         Room.AddSync(sync.Snapshots.Where(snapshot => snapshot.ID == ID.ToString()).ToArray());
                     }
                 }
@@ -102,7 +101,7 @@ namespace LD43GameServer
                 Close(PlayerStatus.Hang);
             }
         }
-        async void StartSendInternal()
+        async Task StartSendInternal()
         {
             try
             {

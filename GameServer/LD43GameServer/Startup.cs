@@ -51,8 +51,9 @@ namespace LD43GameServer
                         WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
                         var handler = new WebSocketHandler(webSocket);
                         var player = new Player(handler);
-                        player.Start();
+                        GameServer.Instance.AddPlayer(player);
                         ServerLog.Log($"A player connected.");
+                        await player.Start();
                     }
                     else
                     {

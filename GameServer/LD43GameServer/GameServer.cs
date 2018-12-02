@@ -9,11 +9,17 @@ namespace LD43GameServer
     {
         public GameHost GameHost;
         Dictionary<Guid, string> Players = new Dictionary<Guid, string>();
+        public List<Player> PlayerList = new List<Player>();
 
         public void Start()
         {
             GameHost = new GameHost();
             ServerLog.Log("Game server started.");
+        }
+
+        public void AddPlayer(Player player)
+        {
+            PlayerList.Add(player);
         }
 
         public bool Join(Player player)

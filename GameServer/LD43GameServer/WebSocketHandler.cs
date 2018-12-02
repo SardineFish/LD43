@@ -59,8 +59,16 @@ namespace LD43GameServer
 
         public async void Close()
         {
-            await webSocket.CloseAsync(WebSocketCloseStatus.InternalServerError, "Server Close", CancellationToken.None);
-            webSocket.Dispose();
+            ServerLog.Log("Connection closing");
+            try
+            {
+                await webSocket.CloseAsync(WebSocketCloseStatus.InternalServerError, "Server Close", CancellationToken.None);
+                webSocket.Dispose();
+            }
+            catch
+            {
+
+            }
         }
     }
 }
