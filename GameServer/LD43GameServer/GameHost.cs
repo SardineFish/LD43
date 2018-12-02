@@ -15,6 +15,7 @@ namespace LD43GameServer
 
         public bool Join(Player player)
         {
+            Players[player.ID] = player;
             if (Rooms.Count <= 0 || !Rooms[Rooms.Count - 1].Join(player))
             {
                 var room = AddRoom(PlayerRecords.Values.ToArray());

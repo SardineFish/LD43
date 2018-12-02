@@ -19,6 +19,7 @@ namespace LD43GameServer
         public Guid ID;
         public bool Active { get; private set; }
         internal GameRoom Room = null;
+        public float LastUpdateTime = 0;
         WebSocketHandler handler;
         Task ReceiveTask;
         Task SendTask;

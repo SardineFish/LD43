@@ -66,7 +66,6 @@ namespace LD43GameServer
             Thread.Sleep(TimeSpan.FromSeconds(WaitTiime));
             lock (Players)
             {
-
                 foreach(var pair in Players)
                 {
                     pair.Value.Sync(0, new PlayerSnapShot[0]);
@@ -83,13 +82,26 @@ namespace LD43GameServer
                     PendingSync = new List<PlayerSnapShot>();
                 }
                 var snapshots = SendingSync.ToArray();
+                bool shouldClose = true;
                 lock (Players)
                 {
                     foreach (var pair in Players)
                     {
-                        pair.Value.Sync(GameTick, snapshots);
+                        var player = pair.Value;
+                        if (player.Status == PlayerStatus.Alive)
+                        {
+                            shouldClose = false;
+                            player.Sync(GameTick, snapshots);
+                        }
+                        else if (player.Status == PlayerStatus.Hang && GameTime - player.LastUpdateTime <= WaitTiime)
+                        {
+                            shouldClose = false;
+                        }
                     }
                 }
+                if (shouldClose)
+                    Close();
+                break;
             }
             lock (Players)
             {
@@ -98,6 +110,7 @@ namespace LD43GameServer
                     pair.Value.Close(PlayerStatus.Dead);
                 }
             }
+            GameServer.Instance.GameHost.RemoveRoom(this.ID);
         }
 
         public void AddSync(PlayerSnapShot[] snapShots)
