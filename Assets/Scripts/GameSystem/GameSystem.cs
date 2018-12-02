@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class GameSystem : Singleton<GameSystem>
 {
     public Player PlayerInControl;
-    public List<Player> PlayBackPlayers = new List<Player>();
+    public List<ShadowPlayer> PlayBackPlayers = new List<ShadowPlayer>();
     public bool GameStarted = false;
     public int Tick;
     private void Start()
@@ -29,7 +29,7 @@ public class GameSystem : Singleton<GameSystem>
         GameStarted = false;
         Destroy(PlayerInControl.gameObject);
         PlayBackPlayers.ForEach(player => Destroy(player.gameObject));
-        PlayBackPlayers = new List<Player>();
+        PlayBackPlayers = new List<ShadowPlayer>();
     }
 
     public Player SpawnPlayer(GameObject prefab, LocationMark location)
@@ -42,9 +42,9 @@ public class GameSystem : Singleton<GameSystem>
         return player;
     }
 
-    public Player SpawnPlayBackPlayer(GameObject prefab,LocationMark location, ControlDetail[] controlSequence)
+    public ShadowPlayer SpawnPlayBackPlayer(GameObject prefab,LocationMark location, ControlDetail[] controlSequence)
     {
-        var player = Instantiate(prefab).GetComponent<Player>();
+        var player = Instantiate(prefab).GetComponent<ShadowPlayer>();
         player.GetComponent<PlayerController>().ControlSequence = new PlaybackControlSequence(controlSequence);
         player.transform.position = location.transform.position;
         PlayBackPlayers.Add(player);

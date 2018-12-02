@@ -111,7 +111,6 @@ public class PlayerController : MonoBehaviour
         if (OnGround)
         {
             velocity.y = PhysicsSystem.Instance.JumpVelocoty;
-            Debug.Log(PhysicsSystem.Instance.JumpVelocoty);
             Move(direction);
             return true;
         }

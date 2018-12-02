@@ -8,14 +8,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-public class GameClient : MonoBehaviour
+public class GameClient : Singleton<GameClient>
 {
     public string host = "localhost:9343";
     public string PlayerName;
     public string PlayerID;
     public string RoomID;
     public bool Ready = false;
-    public Dictionary<string, Player> Players = new Dictionary<string, Player>();
+    public Dictionary<string, ShadowPlayer> Players = new Dictionary<string, ShadowPlayer>();
     public Player PlayerInControl;
 
     public GameObject PlayerPrefab;
@@ -46,38 +46,41 @@ public class GameClient : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.F1))
         {
-            GameSystem.Instance.PlayerInControl.GetComponent<PlayerController>().ControlRecord.ForEach(action =>
-            {
-                Debug.Log($"{action.Tick} {action.Action}");
-            });
-            var snapShots = GameSystem.Instance.PlayerInControl.GetComponent<PlayerController>().ControlRecord
-                .Select(playback => new PlayerSnapShot()
-                {
-                    ID = PlayerID,
-                    Tick = playback.Tick,
-                    Control = new PlayerControl()
-                    {
-                        Action = (int)playback.Action,
-                        Direction = playback.Direction
-                    },
-                    Position = new double[] { 0, 0 },
-                    Velocity = new double[] { 0, 0 }
-                })
-                .ToArray();
-            var record = new PlayerRecord()
-            {
-                ID = PlayerID,
-                Name = PlayerName,
-                LeaveMessage = "",
-                Records = snapShots
-            };
-            StartCoroutine(SendRecord(record));
-
+            SendRecord();
             GameSystem.Instance.EndGame();
         }
     }
 
-    
+    public void SendRecord()
+    {
+
+        GameSystem.Instance.PlayerInControl.GetComponent<PlayerController>().ControlRecord.ForEach(action =>
+        {
+            Debug.Log($"{action.Tick} {action.Action}");
+        });
+        var snapShots = GameSystem.Instance.PlayerInControl.GetComponent<PlayerController>().ControlRecord
+            .Select(playback => new PlayerSnapShot()
+            {
+                ID = PlayerID,
+                Tick = playback.Tick,
+                Control = new PlayerControl()
+                {
+                    Action = (int)playback.Action,
+                    Direction = playback.Direction
+                },
+                Position = new double[] { 0, 0 },
+                Velocity = new double[] { 0, 0 }
+            })
+            .ToArray();
+        var record = new PlayerRecord()
+        {
+            ID = PlayerID,
+            Name = PlayerName,
+            LeaveMessage = "",
+            Records = snapShots
+        };
+        StartCoroutine(SendRecord(record));
+    }
 
     IEnumerator ConnectCoroutine()
     {
